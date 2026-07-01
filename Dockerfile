@@ -1,4 +1,4 @@
-# 最終突破版V3！ReActorをバックアップサーバー(Codeberg)から取得
+# 最終突破版V4！消滅したモデルデータをHuggingFaceのバックアップから取得
 FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-runtime
 
 USER root
@@ -14,13 +14,14 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
     pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir numpy==1.26.4 insightface onnxruntime onnxruntime-gpu runpod
 
-# ★ここを修正：GitHubがダウン中のため、公式予備サーバー(Codeberg)から安全にダウンロード！
+# GitHubダウン回避：公式予備サーバー(Codeberg)から安全にダウンロード
 RUN git clone https://codeberg.org/Gourieff/comfyui-reactor-node.git /workspace/ComfyUI/custom_nodes/comfyui-reactor-node
 
-# AIが絵を描くための画材（モデルデータ）をサーバー内にダウンロード
+# AIモデルデータをサーバー内にダウンロード
 RUN wget -O /workspace/ComfyUI/models/checkpoints/sdxl_lightning.safetensors "https://huggingface.co/ByteDance/SDXL-Lightning/resolve/main/sdxl_lightning_4step.safetensors"
+# ★ここを修正：GitHubから消された顔入れ替えモデルを、HuggingFaceのバックアップから取得！
 RUN mkdir -p /workspace/ComfyUI/models/insightface/models && \
-    wget -O /workspace/ComfyUI/models/insightface/models/inswapper_128.onnx "https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx"
+    wget -O /workspace/ComfyUI/models/insightface/models/inswapper_128.onnx "https://huggingface.co/ezioruan/inswapper_128.onnx/resolve/main/inswapper_128.onnx"
 RUN mkdir -p /workspace/ComfyUI/models/facerestore_models && \
     wget -O /workspace/ComfyUI/models/facerestore_models/codeformer.pth "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth"
 
