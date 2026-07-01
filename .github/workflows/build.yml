@@ -1,4 +1,4 @@
-name: Build and Push to Docker Hub
+name: Build and Push
 
 on:
   push:
@@ -11,15 +11,9 @@ jobs:
     - name: Check out the repo
       uses: actions/checkout@v3
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: heesanhunt
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
-        tags: heesanhunt/runpod-worker:latest
+        tags: ttl.sh/heesanhunt-runpod-worker:24h
