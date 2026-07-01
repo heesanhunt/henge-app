@@ -1,22 +1,20 @@
-FROM runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
+# 8GBの重いベースから、3GBの超軽量ベースに変更して容量を節約
+FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-runtime
 
 USER root
 WORKDIR /workspace
 
-RUN apt-get update && apt-get install -y git wget && rm -rf /var/lib/apt/lists/*
+# OpenCVなどの画像処理に必要な追加パッケージもインストール
+RUN apt-get update && apt-get install -y git wget libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
-# 古い安定版のComfyUIをピンポイントでダウンロード（相性問題を完全解決）
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
     cd ComfyUI && \
     git checkout ec6f16adb607fa8d14b26670106e1a09d8401e20 && \
-    pip install -r requirements.txt && \
-    pip install numpy==1.26.4
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir numpy==1.26.4 insightface onnxruntime onnxruntime-gpu runpod
 
-# 必要なモジュールのインストール
-RUN pip install insightface onnxruntime onnxruntime-gpu runpod
-
-# 顔交換プラグイン（ReActor）のダウンロード
-RUN cd /workspace/ComfyUI/custom_nodes && git clone https://github.com/Gourieff/comfyui-reactor-node.git
+# エラーが起きたReActorプラグインの確実なダウンロード
+RUN git clone https://github.com/Gourieff/comfyui-reactor-node.git /workspace/ComfyUI/custom_nodes/comfyui-reactor-node
 
 # 【重要】AIが絵を描くための画材（モデルデータ）をサーバー内にダウンロード
 RUN wget -O /workspace/ComfyUI/models/checkpoints/sdxl_lightning.safetensors "https://huggingface.co/ByteDance/SDXL-Lightning/resolve/main/sdxl_lightning_4step.safetensors"
@@ -25,8 +23,7 @@ RUN mkdir -p /workspace/ComfyUI/models/insightface/models && \
 RUN mkdir -p /workspace/ComfyUI/models/facerestore_models && \
     wget -O /workspace/ComfyUI/models/facerestore_models/codeformer.pth "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth"
 
-# ファイルの配置と起動コマンド
 COPY handler.py /workspace/handler.py
 COPY workflow.json /workspace/workflow.json
 
-CMD /bin/bash -c "python3 /workspace/ComfyUI/main.py --listen > /workspace/comfyui.log 2>&1 & python3 /workspace/handler.py"
+CMD ["/bin/bash", "-c", "python3 /workspace/ComfyUI/main.py --listen > /workspace/comfyui.log 2>&1 & python3 /workspace/handler.py"]
