@@ -1,4 +1,4 @@
-# 8GBの重いベースから、3GBの超軽量ベースに変更して容量を節約
+# 最終突破版！8GBの重いベースから、3GBの超軽量ベースに変更して容量を節約
 FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-runtime
 
 USER root
@@ -13,7 +13,7 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
     pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir numpy==1.26.4 insightface onnxruntime onnxruntime-gpu runpod
 
-# エラーが起きたReActorプラグインをZIPで強制ダウンロードして解凍（ハイフン追加修正版）
+# エラーが起きたReActorプラグインをZIPで強制ダウンロードして解凍
 RUN wget https://github.com/Gourieff/comfyui-reactor-node/archive/refs/heads/main.zip && \
     unzip main.zip -d /workspace/ComfyUI/custom_nodes/ && \
     mv /workspace/ComfyUI/custom_nodes/comfyui-reactor-node-main /workspace/ComfyUI/custom_nodes/comfyui-reactor-node && \
