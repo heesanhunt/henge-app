@@ -6,12 +6,11 @@ WORKDIR /workspace
 # システム要件のインストール
 RUN apt-get update && apt-get install -y git wget && rm -rf /var/lib/apt/lists/*
 
-# エラーの出ない安定版ComfyUIのダウンロード
+# ComfyUIのダウンロード
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
     cd ComfyUI && \
-    git checkout 9e32085 && \
     pip install -r requirements.txt && \
-    pip install "numpy<2"
+    pip install numpy==1.26.4
 
 # 顔交換（ReActor）とRunPodの通信モジュールのインストール
 RUN pip install insightface onnxruntime onnxruntime-gpu runpod
