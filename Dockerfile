@@ -1,4 +1,4 @@
-# 最終突破版V2！軽量ベース＆安全なダウンロード方式
+# 最終突破版V3！ReActorをバックアップサーバー(Codeberg)から取得
 FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-runtime
 
 USER root
@@ -7,17 +7,17 @@ WORKDIR /workspace
 # 必要なパッケージをインストール
 RUN apt-get update && apt-get install -y git wget libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
-# ComfyUI本体のインストール（キャッシュ無効化で容量節約）
+# ComfyUI本体のインストール
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git && \
     cd ComfyUI && \
     git checkout ec6f16adb607fa8d14b26670106e1a09d8401e20 && \
     pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir numpy==1.26.4 insightface onnxruntime onnxruntime-gpu runpod
 
-# エラーが起きたReActorプラグインを安全なgit cloneでインストール
-RUN git clone https://github.com/Gourieff/comfyui-reactor-node.git /workspace/ComfyUI/custom_nodes/comfyui-reactor-node
+# ★ここを修正：GitHubがダウン中のため、公式予備サーバー(Codeberg)から安全にダウンロード！
+RUN git clone https://codeberg.org/Gourieff/comfyui-reactor-node.git /workspace/ComfyUI/custom_nodes/comfyui-reactor-node
 
-# 【重要】AIが絵を描くための画材（モデルデータ）をサーバー内にダウンロード
+# AIが絵を描くための画材（モデルデータ）をサーバー内にダウンロード
 RUN wget -O /workspace/ComfyUI/models/checkpoints/sdxl_lightning.safetensors "https://huggingface.co/ByteDance/SDXL-Lightning/resolve/main/sdxl_lightning_4step.safetensors"
 RUN mkdir -p /workspace/ComfyUI/models/insightface/models && \
     wget -O /workspace/ComfyUI/models/insightface/models/inswapper_128.onnx "https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx"
